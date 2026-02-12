@@ -20,7 +20,7 @@ const StatsView: React.FC<StatsViewProps> = ({ rooms, bookings }) => {
   // Prepare chart data: Bookings per room
   const data = rooms.map(room => ({
     name: room.name.replace('Phòng ', ''),
-    bookings: bookings.filter(b => b.roomId === room.id).length
+    bookings: bookings.filter(b => b.room_id === room.id).length
   }));
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
@@ -99,7 +99,7 @@ const StatsView: React.FC<StatsViewProps> = ({ rooms, bookings }) => {
             {bookings.slice(0, 4).map((booking) => (
               <div key={booking.id} className="flex gap-3 pb-3 border-b border-gray-50 last:border-0 last:pb-0">
                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
-                   {new Date(booking.startTime).getHours()}h
+                   {new Date(booking.start_time).getHours()}h
                 </div>
                 <div>
                   <h5 className="text-sm font-semibold text-gray-900 truncate w-40">{booking.title}</h5>

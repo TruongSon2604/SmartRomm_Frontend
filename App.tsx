@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { LayoutGrid, CalendarDays, BarChart3, Search, Sparkles, MessageSquarePlus, CheckCircle, AlertCircle, LogOut } from 'lucide-react';
-import { MOCK_ROOMS, MOCK_BOOKINGS } from './constants';
 import { Room, Booking, ViewState } from './types';
 import RoomCard from './components/RoomCard';
 import BookingModal from './components/BookingModal';
@@ -9,6 +8,7 @@ import CalendarView from './components/CalendarView';
 import AiAssistant from './components/AiAssistant';
 import Login from './components/Login';
 import { getRooms } from './services/roomService';
+import { getBooking } from './services/bookingService';
 
 // Simple Toast Notification Component
 const Toast = ({ message, type }: { message: string, type: 'success' | 'error' }) => (
@@ -22,7 +22,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   // const [rooms, setRooms] = useState<Room[]>(MOCK_ROOMS);
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>(MOCK_BOOKINGS);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [view, setView] = useState<ViewState>('rooms');
 
   // State for Booking
@@ -41,16 +41,31 @@ function App() {
     const fetchRooms = async () => {
       try {
         const data = await getRooms();
+        console.log("Log room", rooms);
         setRooms(data);
       } catch (error) {
-        console.error('Failed to fetch rooms', error);
+        console.error('Failed to fetch rooms and booking', error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchRooms();
   }, []);
+
+  useEffect(() => {
+    if (view !== 'dashboard' && view !=='calendar') return;
+    const fetchBookings = async () => {
+      try {
+        const listBooking = await getBooking();
+        setBookings(listBooking);
+      } catch (error) {
+        console.error('Failed to fetch booking', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBookings();
+  }, [view]);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
@@ -73,7 +88,7 @@ function App() {
   };
 
   const handleEditBooking = (booking: Booking) => {
-    const room = rooms.find(r => r.id === booking.roomId);
+    const room = rooms.find(r => r.id === booking.room_id);
     if (room) {
       setSelectedRoom(room);
       setEditingBooking(booking);
@@ -82,7 +97,9 @@ function App() {
   };
 
   const handleBookingSubmit = (bookingData: any) => {
-    const startDateTime = new Date(`${bookingData.date}T${bookingData.startTime}:00`);
+    // alert("vao day ");
+    console.log('booking data', bookingData);
+    const startDateTime = new Date(`${bookingData.date}T${bookingData.start_time}:00`);
     const endDateTime = new Date(startDateTime.getTime() + parseInt(bookingData.duration) * 60000);
     const now = new Date();
 
@@ -95,11 +112,11 @@ function App() {
     // 2. Validation: Collision check (Overlapping bookings)
     // Exclude current booking if we are editing
     const hasConflict = bookings.some(b => {
-      if (b.roomId !== bookingData.roomId) return false;
+      if (b.room_id !== bookingData.room_id) return false;
       if (editingBooking && b.id === editingBooking.id) return false; // Ignore self when editing
 
-      const bStart = new Date(b.startTime);
-      const bEnd = new Date(b.endTime);
+      const bStart = new Date(b.start_time);
+      const bEnd = new Date(b.end_time);
 
       // Check overlapping logic: (StartA < EndB) and (EndA > StartB)
       return startDateTime < bEnd && endDateTime > bStart;
@@ -127,21 +144,24 @@ function App() {
       showToast("Cập nhật lịch đặt thành công!", "success");
     } else {
       // CREATE new booking
+      const me = JSON.parse(localStorage.getItem('me'));
       const newBooking: Booking = {
-        id: Math.random().toString(36).substr(2, 9),
-        roomId: bookingData.roomId,
+        id: Math.random(),
+        room_id: bookingData.roomId,
+        user_id: me.id,
         title: bookingData.title,
         organizer: bookingData.organizer,
-        startTime: startDateTime.toISOString(),
-        endTime: endDateTime.toISOString(),
-        attendees: parseInt(bookingData.attendees)
+        start_time: startDateTime.toISOString(),
+        end_time: endDateTime.toISOString(),
+        attendees: parseInt(bookingData.attendees),
       };
+      console.log('newBooking',newBooking);
       setBookings(prev => [...prev, newBooking]);
       showToast(`Đặt phòng "${bookingData.roomName}" thành công!`, "success");
     }
   };
 
-  const handleDeleteBooking = (bookingId: string) => {
+  const handleDeleteBooking = (bookingId: number) => {
     if (window.confirm("Bạn có chắc chắn muốn hủy lịch đặt phòng này không?")) {
       setBookings(prev => prev.filter(b => b.id !== bookingId));
       showToast("Đã hủy lịch đặt phòng.", "success");
@@ -149,7 +169,7 @@ function App() {
     }
   };
 
-  const handleAiSuggestion = (roomId: string) => {
+  const handleAiSuggestion = (roomId: number) => {
     setHighlightedRoomId(roomId);
     setView('rooms');
 
@@ -168,6 +188,7 @@ function App() {
   const filteredRooms = rooms.filter(room =>
     room.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
 
   if (!isAuthenticated) {
     return <Login onLogin={handleLogin} />;

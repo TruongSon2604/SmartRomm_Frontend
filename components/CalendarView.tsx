@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Trash2, Edi
 interface CalendarViewProps {
   rooms: Room[];
   bookings: Booking[];
-  onDeleteBooking: (id: string) => void;
+  onDeleteBooking: (id: number) => void;
   onEditBooking: (booking: Booking) => void;
 }
 
@@ -70,13 +70,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({ rooms, bookings, onDeleteBo
 
   // Filter bookings for the selected date
   const daysBookings = bookings.filter(b => {
-    const bookingDate = new Date(b.startTime);
+    const bookingDate = new Date(b.start_time);
     return bookingDate.toDateString() === currentDate.toDateString();
   });
 
   const getBookingStyle = (booking: Booking) => {
-    const start = new Date(booking.startTime);
-    const end = new Date(booking.endTime);
+    const start = new Date(booking.start_time);
+    const end = new Date(booking.end_time);
 
     // Calculate start position relative to START_HOUR
     const startMinutes = (start.getHours() - START_HOUR) * 60 + start.getMinutes();
@@ -193,7 +193,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ rooms, bookings, onDeleteBo
             </div>
 
             {rooms.map((room) => {
-              const roomBookings = daysBookings.filter(b => b.roomId === room.id);
+              const roomBookings = daysBookings.filter(b => b.room_id === room.id);
 
               return (
                 <div key={room.id} className="flex border-b border-gray-100 min-h-[100px] hover:bg-gray-50/50 transition-colors group">
@@ -202,7 +202,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ rooms, bookings, onDeleteBo
                     <h4 className="font-bold text-gray-800 text-sm">{room.name}</h4>
                     <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
                       <Clock size={12} />
-                      Tầng {room.floor} • {room.capacity} ch
+                      NMDC • {room.capacity} seet
                     </p>
                     <div className="mt-2 text-[10px] text-gray-400 bg-gray-100 inline-block px-2 py-0.5 rounded-full self-start">
                       ID: {room.id}

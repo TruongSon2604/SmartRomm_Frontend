@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LayoutGrid, Lock, Mail, ArrowRight, Loader2 } from 'lucide-react';
-
+import { onLoginfunction } from '../services/loginService'; 
 interface LoginProps {
   onLogin: () => void;
 }
@@ -16,16 +16,31 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     setError('');
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      if (email && password) {
-        setIsLoading(false);
-        onLogin();
-      } else {
+    // // Simulate API call
+    // setTimeout(() => {
+    //   if (email && password) {
+    //     setIsLoading(false);
+    //     onLogin();
+    //   } else {
+    //     setIsLoading(false);
+    //     setError('Vui lòng nhập đầy đủ email và mật khẩu');
+    //   }
+    // }, 800);
+     if (!email || !password) 
+      {
         setIsLoading(false);
         setError('Vui lòng nhập đầy đủ email và mật khẩu');
+        return;
       }
-    }, 800);
+
+    const success = await onLoginfunction(email, password);
+    setIsLoading(false);
+
+    if (success) {
+      onLogin();
+    } else {
+      setError('Email hoặc mật khẩu không đúng');
+    }
   };
 
   return (

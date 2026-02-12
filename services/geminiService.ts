@@ -30,14 +30,14 @@ export const getRoomRecommendation = async (
     id: r.id,
     name: r.name,
     capacity: r.capacity,
-    equipment: r.equipment,
+    equipment: r.equipments,
     status: r.status
   }));
 
   const simplifiedBookings = bookings.map(b => ({
-    roomId: b.roomId,
-    start: new Date(b.startTime).toLocaleString('vi-VN'),
-    end: new Date(b.endTime).toLocaleString('vi-VN'),
+    roomId: b.room_id,
+    start: new Date(b.start_time).toLocaleString('vi-VN'),
+    end: new Date(b.end_time).toLocaleString('vi-VN'),
     title: b.title
   }));
 

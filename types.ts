@@ -22,8 +22,9 @@ export interface Booking {
   start_time: string; // ISO string
   end_time: string; // ISO string
   attendees: number;
-  status: 'approved' | 'pending' | 'rejected' | 'cancelled';
+  status: 'available' | 'busy' | 'maintenance';
   notes?: string;
+  user_id:number;
 }
 
 export interface ChatMessage {

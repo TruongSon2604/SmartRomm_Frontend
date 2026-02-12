@@ -2,7 +2,7 @@ import { Room, Booking } from './types';
 
 export const MOCK_ROOMS: Room[] = [
   {
-    id: 'r1',
+    id: 1,
     name: 'Phòng Galaxy',
     capacity: 20,
     equipments: ['Projector', 'Whiteboard', 'Video Conf'],
@@ -11,7 +11,7 @@ export const MOCK_ROOMS: Room[] = [
     status: 'available'
   },
   {
-    id: 'r2',
+    id: 2,
     name: 'Phòng Nebula',
     capacity: 8,
     equipments: ['TV', 'Whiteboard'],
@@ -20,7 +20,7 @@ export const MOCK_ROOMS: Room[] = [
     status: 'busy'
   },
   {
-    id: 'r3',
+    id: 3,
     name: 'Phòng Star',
     capacity: 4,
     equipments: ['Whiteboard'],
@@ -28,24 +28,24 @@ export const MOCK_ROOMS: Room[] = [
     image: 'https://picsum.photos/400/300?random=3',
     status: 'available'
   },
-  {
-    id: 'r4',
-    name: 'Phòng Cosmos',
-    capacity: 50,
-    equipments: ['Projector', 'Sound System', 'Stage', 'Video Conf'],
-    floor: 1,
-    image: 'https://picsum.photos/400/300?random=4',
-    status: 'maintenance'
-  },
-  {
-    id: 'r5',
-    name: 'Phòng Orbit',
-    capacity: 12,
-    equipments: ['TV', 'Video Conf'],
-    floor: 3,
-    image: 'https://picsum.photos/400/300?random=5',
-    status: 'available'
-  }
+  // {
+  //   id: 'r4',
+  //   name: 'Phòng Cosmos',
+  //   capacity: 50,
+  //   equipments: ['Projector', 'Sound System', 'Stage', 'Video Conf'],
+  //   floor: 1,
+  //   image: 'https://picsum.photos/400/300?random=4',
+  //   status: 'maintenance'
+  // },
+  // {
+  //   id: 'r5',
+  //   name: 'Phòng Orbit',
+  //   capacity: 12,
+  //   equipments: ['TV', 'Video Conf'],
+  //   floor: 3,
+  //   image: 'https://picsum.photos/400/300?random=5',
+  //   status: 'available'
+  // }
 ];
 
 // Helper to create dates relative to today
@@ -62,7 +62,7 @@ const setTime = (date: Date, hours: number) => {
 export const MOCK_BOOKINGS: Booking[] = [
   {
     id: 1,
-    roomId: 1,
+    room_id: 1,
     title: 'Họp Daily Team Tech',
     organizer: 'Nguyễn Văn A',
     startTime: setTime(today, 9),

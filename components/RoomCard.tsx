@@ -43,7 +43,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, onBook, isRecommended }) => {
 
       <div className="relative h-48 overflow-hidden rounded-t-xl">
         <img
-          src={room.image}
+          src="https://decoxdesign.com/upload/images/thiet-ke-phong-hop-01-decox-design.jpg"
           alt={room.name}
           className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
         />

@@ -7,15 +7,21 @@ interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (bookingData: any) => void;
-  onDelete?: (id: string) => void; // New prop
+  onDelete?: (id: number) => void; // New prop
   initialBooking?: Booking | null;
 }
+const calculateEndTime = (date: string, startTime: string, duration: number) => {
+  const start = new Date(`${date}T${startTime}`);
+  const end = new Date(start.getTime() + duration * 60000);
+
+  return end.toTimeString().slice(0, 5); // HH:mm
+};
 
 const BookingModal: React.FC<BookingModalProps> = ({ room, isOpen, onClose, onSubmit, onDelete, initialBooking }) => {
   const [formData, setFormData] = useState({
     title: '',
     date: new Date().toISOString().split('T')[0],
-    startTime: '09:00',
+    start_time: '09:00',
     duration: '60',
     organizer: '',
     attendees: 1
@@ -26,8 +32,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, isOpen, onClose, onSu
     if (isOpen) {
       if (initialBooking) {
         // Edit mode: Parse existing booking data
-        const start = new Date(initialBooking.startTime);
-        const end = new Date(initialBooking.endTime);
+        const start = new Date(initialBooking.start_time);
+        const end = new Date(initialBooking.end_time);
         const durationMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
         
         // Format time to HH:mm for input[type="time"]
@@ -39,7 +45,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, isOpen, onClose, onSu
         setFormData({
           title: initialBooking.title,
           date: dateString,
-          startTime: timeString,
+          start_time: timeString,
           duration: durationMinutes.toString(),
           organizer: initialBooking.organizer,
           attendees: initialBooking.attendees
@@ -49,7 +55,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, isOpen, onClose, onSu
         setFormData({
           title: '',
           date: new Date().toISOString().split('T')[0],
-          startTime: '09:00',
+          start_time: '09:00',
           duration: '60',
           organizer: '',
           attendees: 1
@@ -62,10 +68,16 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, isOpen, onClose, onSu
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const endTime = calculateEndTime(
+    formData.date,
+    formData.start_time,
+    Number(formData.duration)
+  );
     onSubmit({
       ...formData,
-      roomId: room.id,
+      room_id: room.id,
       roomName: room.name,
+      end_time: endTime,
       id: initialBooking?.id // Pass ID if editing
     });
     onClose();
@@ -156,9 +168,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, isOpen, onClose, onSu
                   </div>
                   <input
                     type="time"
-                    name="startTime"
+                    name="start_time"
                     required
-                    value={formData.startTime}
+                    value={formData.start_time}
                     onChange={handleChange}
                     className="pl-10 block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-brand-500 focus:border-brand-500"
                   />
