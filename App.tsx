@@ -7,8 +7,10 @@ import StatsView from './components/StatsView';
 import CalendarView from './components/CalendarView';
 import AiAssistant from './components/AiAssistant';
 import Login from './components/Login';
+// import { ToastContainer, toast } from 'react-toastify';
 import { getRooms } from './services/roomService';
 import { getBooking } from './services/bookingService';
+import { bookingRoom, updateBooking, deleteBooking } from './services/bookingService';
 
 // Simple Toast Notification Component
 const Toast = ({ message, type }: { message: string, type: 'success' | 'error' }) => (
@@ -50,7 +52,7 @@ function App() {
       }
     };
     fetchRooms();
-  }, []);
+  },[]);
 
   useEffect(() => {
     if (view !== 'dashboard' && view !=='calendar') return;
@@ -96,9 +98,21 @@ function App() {
     }
   };
 
-  const handleBookingSubmit = (bookingData: any) => {
-    // alert("vao day ");
-    console.log('booking data', bookingData);
+  const handleBookingSubmit = async (bookingData: any) => {
+      console.log('booking data ne', bookingData);
+      const me = JSON.parse(localStorage.getItem('me'));
+      const newBooking: Booking = {
+      id: Math.random(),
+      room_id: bookingData.room_id,
+      user_id: me.id,
+      title: bookingData.title,
+      organizer: bookingData.organizer,
+      start_time: bookingData.start_time,
+      end_time: bookingData.end_time,
+      attendees: bookingData.attendees,
+    };
+
+
     const startDateTime = new Date(`${bookingData.date}T${bookingData.start_time}:00`);
     const endDateTime = new Date(startDateTime.getTime() + parseInt(bookingData.duration) * 60000);
     const now = new Date();
@@ -128,41 +142,79 @@ function App() {
     }
 
     if (editingBooking) {
-      // UPDATE existing booking
-      setBookings(prev => prev.map(b =>
+
+         try {
+        await updateBooking(editingBooking.id,newBooking);
+        setBookings(prev => [...prev, newBooking]);
+        setBookings(prev => prev.map(b =>
         b.id === editingBooking.id
           ? {
             ...b,
             title: bookingData.title,
             organizer: bookingData.organizer,
-            startTime: startDateTime.toISOString(),
-            endTime: endDateTime.toISOString(),
-            attendees: parseInt(bookingData.attendees)
+            start_time: bookingData.start_time,
+            end_time: bookingData.end_time,
+            attendees: parseInt(bookingData.attendees),
+            room_id: bookingData.room_id
           }
           : b
       ));
-      showToast("Cập nhật lịch đặt thành công!", "success");
+        showToast(`Cập nhật đặt phòng "${bookingData.room_id}" thành công!`, "success");
+      }
+    catch (err : any) {
+        const res = err.response?.data;
+        console.error('❌ API error:', res);
+        if (res?.code === 'BOOKING_TIME_CONFLICT') {
+          showToast('⛔ Lịch bị trùng', "error");
+        } else if (res?.code === 'BOOKING_IN_PAST') {
+          showToast('⛔ Không thể đặt trong quá khứ', "error");
+        } else {
+          showToast(res?.message || 'Something went wrong', "error");
+        }
+      }
+
+      // alert(editingBooking.id);
+      // // UPDATE existing booking
+      // setBookings(prev => prev.map(b =>
+      //   b.id === editingBooking.id
+      //     ? {
+      //       ...b,
+      //       title: bookingData.title,
+      //       organizer: bookingData.organizer,
+      //       startTime: startDateTime.toISOString(),
+      //       endTime: endDateTime.toISOString(),
+      //       attendees: parseInt(bookingData.attendees)
+      //     }
+      //     : b
+      // ));
+      // showToast("Cập nhật lịch đặt thành công!", "success");
     } else {
       // CREATE new booking
-      const me = JSON.parse(localStorage.getItem('me'));
-      const newBooking: Booking = {
-        id: Math.random(),
-        room_id: bookingData.roomId,
-        user_id: me.id,
-        title: bookingData.title,
-        organizer: bookingData.organizer,
-        start_time: startDateTime.toISOString(),
-        end_time: endDateTime.toISOString(),
-        attendees: parseInt(bookingData.attendees),
-      };
+
       console.log('newBooking',newBooking);
-      setBookings(prev => [...prev, newBooking]);
-      showToast(`Đặt phòng "${bookingData.roomName}" thành công!`, "success");
+      try {
+        await bookingRoom(newBooking);
+        // toast.success('Booking created successfully 🎉');
+        setBookings(prev => [...prev, newBooking]);
+        showToast(`Đặt phòng "${bookingData.room_id}" thành công!`, "success");
+      }
+    catch (err : any) {
+        const res = err.response?.data;
+        console.error('❌ API error:', res);
+        if (res?.code === 'BOOKING_TIME_CONFLICT') {
+          showToast('⛔ Lịch bị trùng', "error");
+        } else if (res?.code === 'BOOKING_IN_PAST') {
+          showToast('⛔ Không thể đặt trong quá khứ', "error");
+        } else {
+          showToast(res?.message || 'Something went wrong', "error");
+        }
+      }
     }
   };
 
-  const handleDeleteBooking = (bookingId: number) => {
+  const handleDeleteBooking = async (bookingId: number) => {
     if (window.confirm("Bạn có chắc chắn muốn hủy lịch đặt phòng này không?")) {
+      await deleteBooking (bookingId);
       setBookings(prev => prev.filter(b => b.id !== bookingId));
       showToast("Đã hủy lịch đặt phòng.", "success");
       setIsBookingModalOpen(false); // Close modal if open
@@ -359,5 +411,4 @@ function App() {
     </div>
   );
 }
-
 export default App;

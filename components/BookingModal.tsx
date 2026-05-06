@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Room, Booking } from '../types';
 import { X, Calendar, Clock, User, AlignLeft, Save, Trash2 } from 'lucide-react';
+import { bookingRoom } from '../services/bookingService';
+import { ToastContainer, toast } from 'react-toastify';
 
 interface BookingModalProps {
   room: Room | null;
@@ -30,6 +32,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, isOpen, onClose, onSu
   // Reset or pre-fill form when modal opens or initialBooking changes
   useEffect(() => {
     if (isOpen) {
+
+
       if (initialBooking) {
         // Edit mode: Parse existing booking data
         const start = new Date(initialBooking.start_time);
@@ -68,20 +72,72 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, isOpen, onClose, onSu
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const userStr = localStorage.getItem('me');
+    const user = userStr ? JSON.parse(userStr) : null;
     const endTime = calculateEndTime(
     formData.date,
     formData.start_time,
     Number(formData.duration)
   );
-    onSubmit({
-      ...formData,
+    // onSubmit({
+    //   ...formData,
+    //   room_id: room.id,
+    //   roomName: room.name,
+    //   end_time: endTime,
+    //   id: initialBooking?.id // Pass ID if editing
+    // });
+        onSubmit({
       room_id: room.id,
-      roomName: room.name,
-      end_time: endTime,
-      id: initialBooking?.id // Pass ID if editing
-    });
+      title: formData.title,
+      organizer: user?.name,
+      attendees: formData.attendees,
+      start_time: `${formData.date}T${formData.start_time}:00`,
+      end_time: `${formData.date}T${endTime}:00`,
+        });
+
     onClose();
   };
+//   const handleSubmit = async (e: React.FormEvent) => {
+//   e.preventDefault();
+//     const userStr = localStorage.getItem('me');
+//   const user = userStr ? JSON.parse(userStr) : null;
+//   const endTime = calculateEndTime(
+//     formData.date,
+//     formData.start_time,
+//     Number(formData.duration)
+//   );
+
+//   try {
+
+//    const payload = {
+//   room_id: room.id,
+//   title: formData.title,
+//   organizer: user?.name,
+//   attendees: formData.attendees,
+//   start_time: `${formData.date} ${formData.start_time}:00`,
+//   end_time: `${formData.date} ${endTime}:00`,
+// };
+
+//     console.log('📦 Booking payload:', payload);
+
+//     await bookingRoom(payload);
+//     toast.success('Booking created successfully 🎉');
+
+//     onClose();
+//   } catch (err : any) {
+//     const res = err.response?.data;
+
+//     console.error('❌ API error:', res);
+
+//     if (res?.code === 'BOOKING_TIME_CONFLICT') {
+//       toast.error('⛔ Lịch bị trùng');
+//     } else if (res?.code === 'BOOKING_IN_PAST') {
+//       toast.error('⛔ Không thể đặt trong quá khứ');
+//     } else {
+//       toast.error(res?.message || 'Something went wrong');
+//     }
+//   }
+// };
 
   const handleDelete = () => {
     if (onDelete && initialBooking) {

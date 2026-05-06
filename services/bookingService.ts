@@ -13,17 +13,42 @@ export const getBooking = async (): Promise<Booking[]> => {
     },
   });
 
-  console.log('Fetched booking:', res.data);
+  // console.log('Fetched booking:', res.data);
   return res.data;
 };
 
-export const bookingRoom = async() : Promise<Booking> =>{
-   const token = localStorage.getItem('bookingToken',);
-   const res = await axios.post(`${API_URL}/bookings`, {
+export const bookingRoom = async (formData: any): Promise<Booking> => {
+  const token = localStorage.getItem('bookingToken');
+
+  const res = await axios.post(`${API_URL}/bookings`, formData, {
     headers: {
       Accept: 'application/json',
       Authorization: `Bearer ${token}`,
     },
   });
+
   return res.data;
-}
+};
+
+export const updateBooking = async (id: number, formData: any): Promise<Booking> => {
+  const token = localStorage.getItem('bookingToken');
+
+  const res = await axios.post(`${API_URL}/bookings/${id}`, formData, {
+    headers: {
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return res.data.data;
+};
+
+export const deleteBooking = async (id: number) => {
+  const token = localStorage.getItem('bookingToken');
+
+  await axios.delete(`${API_URL}/bookings/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};

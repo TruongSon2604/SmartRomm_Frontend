@@ -14,6 +14,8 @@ const END_HOUR = 19;  // 7:00 PM
 const TOTAL_HOURS = END_HOUR - START_HOUR;
 
 const CalendarView: React.FC<CalendarViewProps> = ({ rooms, bookings, onDeleteBooking, onEditBooking }) => {
+  console.log('rooms', rooms);
+  console.log('booking', bookings);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentTimePosition, setCurrentTimePosition] = useState<number | null>(null);
 
@@ -70,8 +72,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({ rooms, bookings, onDeleteBo
 
   // Filter bookings for the selected date
   const daysBookings = bookings.filter(b => {
+    // const bookingDate = new Date(b.start_time);
+    // return bookingDate.toDateString() === currentDate.toDateString();
     const bookingDate = new Date(b.start_time);
-    return bookingDate.toDateString() === currentDate.toDateString();
+    return (
+    bookingDate.getUTCFullYear() === currentDate.getFullYear() &&
+    bookingDate.getUTCMonth() === currentDate.getMonth() &&
+    bookingDate.getUTCDate() === currentDate.getDate()
+    );
   });
 
   const getBookingStyle = (booking: Booking) => {
@@ -79,7 +87,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({ rooms, bookings, onDeleteBo
     const end = new Date(booking.end_time);
 
     // Calculate start position relative to START_HOUR
-    const startMinutes = (start.getHours() - START_HOUR) * 60 + start.getMinutes();
+    // const startMinutes = (start.getHours() - START_HOUR) * 60 + start.getMinutes();
+    const startMinutes = (start.getHours() - START_HOUR) * 60 + start.getUTCMinutes();
+
     const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
 
     const left = (startMinutes / (TOTAL_HOURS * 60)) * 100;
